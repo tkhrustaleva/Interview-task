@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaskapp-deployment
+  namespace: mindbox
+  labels:
+    app: flaskapp-deployment
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: flaskapp
+  template:
+    metadata:
+      labels:
+        app: flaskapp
+    spec:
+      containers:
+      - name: flaskapp
+        image: tatita/flackapp:v0.2
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "128M"
+            cpu: "0.1"
+          limits:
+            memory: "128M"
+            cpu: "0.2"
+        startupProbe:
+          httpGet:
+            port: 8000
+            path: /health
+          failureThreshold: 2
+          periodSeconds: 5
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: flaskapp

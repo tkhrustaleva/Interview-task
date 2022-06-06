@@ -1,0 +1,38 @@
+
+replicaCount: 2 ## Выставляем количество pods, которые справляются с min нагрузкой 
+port: 8000
+image: tatita/flackapp:v0.2
+
+## Выставляем требуемые ресурсы: на первые запросы приложению требуется значительно больше ресурсов CPU, 
+## в дальнейшем потребление ровное в районе 0.1 CPU. 
+## По памяти всегда “ровно” в районе 128M memory
+resources: 
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+## Выставляем данные для Пробы - 2 раза через каждые 5 сек
+## так как приложение требует около 5-10 секунд для инициализации
+startupProbe:
+  failureThreshold: 2
+  periodSeconds: 5
+
+## Повышаем доступность и рациональность потребления ресурсов в условиях мультизональности.
+## Кубернетес по дефолту размещает Поды на разных Нодах (https://kubernetes.io/docs/setup/best-practices/multiple-zones/#node-behavior)
+## Однако, чтобы защититься от падения всей Зоны, нам надо либо ставить минимум 3 реплики HPA, либо 2 реплики
+## но с настройкой topologySpreadConstraints
+topologySpreadConstraints:
+  maxskew: 2
+  topologyKey: zone
+  Unsatisfiable: DoNotSchedule
+
+## Так как ночью нагрузка ниже, чем днем мы добавляем HPA (https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+## Скейл будет происходить по CPU, так как утилизация памяти постоянна
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 50
