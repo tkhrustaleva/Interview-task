@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}-pdb
   namespace: {{ .Release.Namespace }}
 spec:
-  minAvailable: 3
+  minAvailable: 2
   selector:
     matchLabels:
       app: {{ .Release.Name }}

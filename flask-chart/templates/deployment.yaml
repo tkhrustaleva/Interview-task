@@ -28,6 +28,17 @@ spec:
             path: /health
           failureThreshold: {{ .Values.startupProbe.failureThreshold }}
           periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.port }}
+          initialDelaySeconds: {{ .Values.startupProbe.periodSeconds }}
+          periodSeconds: 2
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.port }}
+          initialDelaySeconds: {{ .Values.startupProbe.periodSeconds }}
+          periodSeconds: 2
       topologySpreadConstraints:
         - maxSkew: {{ .Values.topologySpreadConstraints.maxskew }}
           topologyKey: {{ .Values.topologySpreadConstraints.topologyKey }}
